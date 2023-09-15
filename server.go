@@ -1,9 +1,15 @@
 package main
 
 import (
+	"database/sql"
+    "log"
     "net/http"
+
     "github.com/labstack/echo/v4"
+	_ "github.com/lib/pq"
 )
+
+var db *sql.DB
 
 type Channel struct {
 	ChannelURL 		string `json:"channelURL"`
@@ -30,6 +36,28 @@ func getChannels(c echo.Context) error {
 	return c.JSON(http.StatusOK, groupChannels)
 }
 
+// func getChannels(c echo.Context) error {
+//     rows, err := db.Query("SELECT * FROM canais")
+//     if err != nil {
+//         log.Println(err)
+//         return echo.NewHTTPError(http.StatusInternalServerError)
+//     }
+//     defer rows.Close()
+
+//     var channels GroupChannels
+//     for rows.Next() {
+//         var channel Channel
+//         if err := rows.Scan(&channel.ChannelURL, &channel.ChannelName, &channel.CoverURL, &channel.CreateBy, &channel.Description, &channel.MemberCount, &channel.JoinedMembers, &channel.MaxMessage, &channel.CreateAt, &channel.IsSuper, &channel.IsPublic, &channel.IsFreeze, &channel.IsEphemeral, &channel.IgnoreProfanity); err != nil {
+//             log.Println(err)
+//             return echo.NewHTTPError(http.StatusInternalServerError)
+//         }
+//         channels = append(channels, channel)
+//     }
+
+//     return c.JSON(http.StatusOK, channels)
+// }
+
+
 func getChannel(c echo.Context)  error {
 	channelurl := c.Param("channelURL")
 	for i := range groupChannels {
@@ -40,6 +68,20 @@ func getChannel(c echo.Context)  error {
 	return c.JSON(http.StatusBadRequest, nil)
 }
 
+// func getChannel(c echo.Context) error {
+//     channelURL := c.Param("channelURL")
+//     var channel Channel
+    
+//     err := db.QueryRow("SELECT * FROM canais WHERE channelURL = $1", channelURL).Scan(&channel.ChannelURL, &channel.ChannelName, &channel.CoverURL, &channel.CreateBy, &channel.Description, &channel.MemberCount, &channel.JoinedMembers, &channel.MaxMessage, &channel.CreateAt, &channel.IsSuper, &channel.IsPublic, &channel.IsFreeze, &channel.IsEphemeral, &channel.IgnoreProfanity)
+//     if err != nil {
+//         log.Println(err)
+//         return echo.NewHTTPError(http.StatusNotFound)
+//     }
+
+//     return c.JSON(http.StatusOK, channel)
+// }
+
+
 func postChannel(c echo.Context) error {
 	channel := Channel{}
 	err := c.Bind(&channel)
@@ -49,6 +91,24 @@ func postChannel(c echo.Context) error {
 	groupChannels = append(groupChannels, channel)
 	return c.JSON(http.StatusCreated, groupChannels)
 }
+
+// func postChannel(c echo.Context) error {
+//     channel := Channel{}
+//     err := c.Bind(&channel)
+//     if err != nil {
+//         return echo.NewHTTPError(http.StatusUnprocessableEntity)
+//     }
+
+//     _, err = db.Exec("INSERT INTO canais (channelURL, channelName, coverURL, createBy, description, memberCount, joinedMembers, maxMessage, createAt, isSuper, isPublic, isFreeze, isEphemeral, ignoreProfanity) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)",
+//         channel.ChannelURL, channel.ChannelName, channel.CoverURL, channel.CreateBy, channel.Description, channel.MemberCount, channel.JoinedMembers, channel.MaxMessage, channel.CreateAt, channel.IsSuper, channel.IsPublic, channel.IsFreeze, channel.IsEphemeral, channel.IgnoreProfanity)
+//     if err != nil {
+//         log.Println(err)
+//         return echo.NewHTTPError(http.StatusInternalServerError)
+//     }
+
+//     return c.JSON(http.StatusCreated, channel)
+// }
+
 
 func deleteChannel(c echo.Context) error {
 	channelurl := c.Param("channelURL")
@@ -62,13 +122,17 @@ func deleteChannel(c echo.Context) error {
 }
 
 func main() {
+
+    connStr := "user=postgres password=1234 dbname=dbChannels host=localhost port=5432 sslmode=disable"
+    var err error
+    db, err = sql.Open("postgres", connStr)
+    if err != nil {
+        log.Fatal(err)
+		log.Println(err)
+    }
+    defer db.Close()
+
     e := echo.New()
-    e.GET("/", func(c echo.Context) error {
-        return c.String(http.StatusOK, "Hello, World!")
-    })
-	e.GET("/teste", func(c echo.Context) error {
-        return c.String(http.StatusOK, "Testando")
-    })
 
 	e.GET("/channels", getChannels)
 	e.POST("/channels", postChannel)
