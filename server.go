@@ -33,10 +33,6 @@ type GroupChannels []Channel
 
 var groupChannels GroupChannels
 
-// func getChannels(c echo.Context) error {
-// 	return c.JSON(http.StatusOK, groupChannels)
-// }
-
 func getChannels(c echo.Context) error {
     rows, err := db.Query("SELECT * FROM channel")
     if err != nil {
@@ -79,17 +75,6 @@ func getChannelsUsers(c echo.Context) error {
     return c.JSON(http.StatusOK, channels)
 }
 
-
-// func getChannel(c echo.Context)  error {
-// 	channelurl := c.Param("channelURL")
-// 	for i := range groupChannels {
-// 		if groupChannels[i].ChannelURL == channelurl {
-// 			return c.JSON(http.StatusOK, groupChannels[i])
-// 		}
-// 	}
-// 	return c.JSON(http.StatusBadRequest, nil)
-// }
-
 func getChannel(c echo.Context) error {
     channelURL := c.Param("channelURL")
     var channel Channel
@@ -102,34 +87,6 @@ func getChannel(c echo.Context) error {
 
     return c.JSON(http.StatusOK, channel)
 }
-
-
-// func postChannel(c echo.Context) error {
-// 	channel := Channel{}
-// 	err := c.Bind(&channel)
-// 	if err != nil {
-// 		return echo.NewHTTPError(http.StatusUnprocessableEntity)
-// 	}
-// 	groupChannels = append(groupChannels, channel)
-// 	return c.JSON(http.StatusCreated, groupChannels)
-// }
-
-// func postChannel(c echo.Context) error {
-//     channel := Channel{}
-//     err := c.Bind(&channel)
-//     if err != nil {
-//         return echo.NewHTTPError(http.StatusUnprocessableEntity)
-//     }
-
-//     _, err = db.Exec("INSERT INTO channel (channelURL, channelName, coverURL, createBy, description, memberCount, joinedMembers, maxMessage, createAt, isSuper, isPublic, isFreeze, isEphemeral, ignoreProfanity) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)",
-//         channel.ChannelURL, channel.ChannelName, channel.CoverURL, channel.CreateBy, channel.Description, channel.MemberCount, channel.JoinedMembers, channel.MaxMessage, channel.CreateAt, channel.IsSuper, channel.IsPublic, channel.IsFreeze, channel.IsEphemeral, channel.IgnoreProfanity)
-//     if err != nil {
-//         log.Println(err)
-//         return echo.NewHTTPError(http.StatusInternalServerError)
-//     }
-
-//     return c.JSON(http.StatusCreated, channel)
-// }
 
 func postChannel(c echo.Context) error {
     channel := Channel{}
@@ -162,19 +119,6 @@ func postChannel(c echo.Context) error {
 
     return c.JSON(http.StatusOK, "Channel created successfully")
 }
-
-
-
-// func deleteChannel(c echo.Context) error {
-// 	channelurl := c.Param("channelURL")
-// 	for i := range groupChannels {
-// 		if groupChannels[i].ChannelURL == channelurl {
-// 			groupChannels = append(groupChannels[:i], groupChannels[i+1:]...)
-// 			return c.JSON(http.StatusOK, groupChannels)
-// 		}
-// 	}
-// 	return c.JSON(http.StatusBadRequest, nil)
-// }
 
 func deleteChannel(c echo.Context) error {
     channelURL := c.Param("channelURL")
